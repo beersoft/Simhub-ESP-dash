@@ -1,0 +1,41 @@
+#include <EspSimHub.h>
+
+
+#define ESPSIMHUB 1
+
+// Fake an Arduino Mega
+#define SIGNATURE_0 0x1E
+#define SIGNATURE_1 0x98
+#define SIGNATURE_2 0x01
+
+// Configure FASTLED with proper pin order
+#define FASTLED_ESP8266_NODEMCU_PIN_ORDER
+
+// A unique identifier for the device.
+//  in the future we could use the bytes to generate some
+//  other format (ala UUID), but now it's just a unique 
+//  string tied to the device.
+
+
+String getMacAddress() {
+    uint8_t baseMac[6];
+    // Get MAC address for WiFi station
+    //esp_read_mac(baseMac, ESP_MAC_WIFI_STA);
+    char baseMacChr[18] = {0};
+    sprintf(baseMacChr, "%02X:%02X:%02X:%02X:%02X:%02X", baseMac[0], baseMac[1], baseMac[2], baseMac[3], baseMac[4], baseMac[5]);
+    return String(baseMacChr);
+}
+
+String getUniqueId() {
+
+   // byte mac[6];
+    uint8_t mac[8];
+   
+   //esp_efuse_mac_get_default(mac);
+  // mac = esp_read_mac(ESP_MAC_EFUSE_CUSTOM);
+ return getMacAddress();
+    return WiFi.macAddress();
+}
+//Call function to get custom Mac address
+
+

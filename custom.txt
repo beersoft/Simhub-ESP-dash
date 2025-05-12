@@ -1,0 +1,53 @@
+if(changed('1',CarSettings_RPMRedLineSetting),'CarSettings_RPMRedLineSetting:'+format([CarSettings_RPMRedLineSetting],'0')+ ';' ,'') + 
+if(changed('1',LapInvalidated),'LapInvalidated:'+abs([LapInvalidated]) + ';','') +  
+if(changed('5',LastLapTime),'LastLapTime:'+left([LastLapTime],3,8) + ';' ,'') + 
+if(changed('5',BestLapTime),'BestLapTime:'+left([BestLapTime],3,8) + ';' ,'') + 
+if(changed('1',SessionBestLiveDeltaProgressSeconds),'SessionBestLiveDeltaProgressSeconds:'+ format([PersistantTrackerPlugin.SessionBestLiveDeltaProgressSeconds],'0.00') + ';' ,'') + 
+if(changed('1',TCLevel),'TCLevel:'+format(abs([TCLevel]),'0') + ';'  ,'')+
+if(changed('1',TCActive),'TCActive:'+format(abs([TCActive]),'0') + ';'  ,'')+
+if(changed('1',ABSLevel),'ABSLevel:'+format(abs([ABSLevel]),'0') + ';' ,'') +
+if(changed('1',ABSActive),'ABSActive:'+format(abs([ABSActive]),'0') + ';' ,'') +
+if(changed('1',BrakeBias),'BrakeBias:'+abs(format([BrakeBias], '00.0')) + ';' ,'') +
+if(changed('1',Fuel),'Fuel:'+format([Fuel],'0')+ ';'  ,'')+
+if(changed('1',EngineMap),'EngineMap:'+format([EngineMap],'0')+ ';' ,'')+ 
+if(changed('1',Fuel_RemainingLaps),'Fuel_RemainingLaps:'+format([DataCorePlugin.Computed.Fuel_RemainingLaps],'0')+';' ,'')+ 
+if(changed('1',Fuel_CurrentLapConsumption),'Fuel_CurrentLapConsumption:'+format([DataCorePlugin.Computed.Fuel_CurrentLapConsumption],'0')+ ';' ,'')+
+
+if(changed('1',TyrePressureFrontLeft),'TyrePressureFrontLeft:'+format([TyrePressureFrontLeft], '00.0') + ';'  ,'')+
+if(changed('1',TyrePressureFrontRight),'TyrePressureFrontRight:'+format([TyrePressureFrontRight], '00.0') + ';'  ,'')+
+if(changed('1',TyrePressureRearLeft),'TyrePressureRearLeft:'+format([TyrePressureRearLeft], '00.0')  + ';'  ,'')+
+if(changed('1',TyrePressureRearRight),'TyrePressureRearRight:'+format([TyrePressureRearRight], '00.0')  +';'  ,'')+
+if(changed('1',BrakeTemperatureFrontLeft),'BrakeTemperatureFrontLeft:'+format([BrakeTemperatureFrontLeft],'000')+ ';' ,'')+
+if(changed('1',BrakeTemperatureFrontRight),'BrakeTemperatureFrontRight:'+format([BrakeTemperatureFrontRight],'000')+ ';' ,'')+
+if(changed('1',BrakeTemperatureRearLeft),'BrakeTemperatureRearLeft:'+format([BrakeTemperatureRearLeft],'000')+ ';' ,'')+
+if(changed('1',BrakeTemperatureRearRight),'BrakeTemperatureRearRight:'+format([BrakeTemperatureRearRight],'000')+ ';' ,'')+
+if(changed('1',TyreTemperatureFrontLeft),'TyreTemperatureFrontLeft:'+format([TyreTemperatureFrontLeft],'000')+ ';' ,'')+
+if(changed('1',TyreTemperatureFrontRight),'TyreTemperatureFrontRight:'+format([TyreTemperatureFrontRight],'000')+ ';' ,'')+
+if(changed('1',TyreTemperatureRearLeft),'TyreTemperatureRearLeft:'+format([TyreTemperatureRearLeft],'000')+ ';' ,'')+
+if(changed('1',TyreTemperatureRearRight),'TyreTemperatureRearRight:'+format([TyreTemperatureRearRight],'000')+ ';' ,'')+
+if(changed('1',CarSettings_RPMShiftLight2),'CarSettings_RPMShiftLight2:'+format([CarSettings_RPMShiftLight2],0)+ ';' ,'')+
+if(changed('1',CarSettings_RPMShiftLight1),'CarSettings_RPMShiftLight1:'+round([CarSettings_RPMShiftLight1],1)+ ';' ,'')+
+if(changed('1',Factchecked),'Flag_Checkered:'+[Flag_Checkered]+ ';' ,'')+
+if(changed('1',Flag_Black),'Flag_Black:'+[Flag_Black]+ ';' ,'')+
+if(changed('1',Flag_Blue),'Flag_Blue:'+[Flag_Blue]+ ';' ,'')+
+if(changed('1',Flag_White),'Flag_White:'+[Flag_White]+ ';' ,'')+
+if(changed('1',mHeadlights),'mHeadlights:'+[GameRawData.CurrentPlayerTelemetry.mHeadlights]+ ';' ,'')+
+'k:v;'+
+
+'fuelp:'+[FuelPercent]+';'+
+'ERSPercent:'+[ERSPercent]+';'+
+'CompletedLaps:'+abs([CompletedLaps])+';' +
+'Position:'+format(abs([Position]),'0')+ ';' +
+'CurrentLap'+[CompletedLaps]+';'+
+
+'CompactDelta:'+format([DataCorePlugin.CustomExpression.CompactDelta],'00.000') + ';' + 
+'SplitDelta:'+format([BestSplitDelta],'00.000') + ';' + 
+'SpeedKmh:'+ format([SpeedKmh],'000')+ ';'+
+'Rpms:'+format ([Rpms],'0')+ ';'+
+'Gear:'+isnull([DataCorePlugin.GameData.NewData.Gear],'N')+ ';'+
+'CarSettings_CurrentDisplayedRPMPercent:'+format([CarSettings_CurrentDisplayedRPMPercent],'0')+';'+
+'CurrentLapTime:'+left([CurrentLapTime],3,8)+';'+
+'IsInPitLane:'+abs([IsInPitLane])+ ';' +
+'PitLimiterOn:'+abs([PitLimiterOn])+ ';' +
+'Flag_Yellow:'+[Flag_Yellow]+ ';' +
+'CurrentDateTime:'+([DataCorePlugin.CurrentDateTime])+ ';'  
