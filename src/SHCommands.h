@@ -419,7 +419,10 @@ void Command_I2CLCDData() {
 	shI2CLcd.read();
 #endif
 }
-
+void Command_SHRGBDisplay() {
+	SHRGBDisplay.read();
+	FlowSerialWrite(0x15);
+}
 void Command_CustomProtocolData() {
 	SHRGBDisplay.read();
 	FlowSerialWrite(0x15);

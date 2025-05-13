@@ -1,5 +1,6 @@
 #include <EspSimHub.h>
-
+#include "esp_system.h"
+#include <esp_mac.h>
 
 #define ESPSIMHUB 1
 
@@ -17,25 +18,22 @@
 //  string tied to the device.
 
 
+
+
+
 String getMacAddress() {
     uint8_t baseMac[6];
     // Get MAC address for WiFi station
     //esp_read_mac(baseMac, ESP_MAC_WIFI_STA);
     char baseMacChr[18] = {0};
     sprintf(baseMacChr, "%02X:%02X:%02X:%02X:%02X:%02X", baseMac[0], baseMac[1], baseMac[2], baseMac[3], baseMac[4], baseMac[5]);
-    return String(baseMacChr);
+    return (baseMacChr);
 }
 
 String getUniqueId() {
 
-   // byte mac[6];
-    uint8_t mac[8];
-   
-   //esp_efuse_mac_get_default(mac);
-  // mac = esp_read_mac(ESP_MAC_EFUSE_CUSTOM);
- return getMacAddress();
-    return WiFi.macAddress();
+	unsigned char mac_base[6] = {0};
+    esp_efuse_mac_get_default(mac_base);
+    esp_read_mac(mac_base, ESP_MAC_WIFI_STA);//ESP_MAC_EFUSE_CUSTOM);
+    return getMacAddress();
 }
-//Call function to get custom Mac address
-
-
