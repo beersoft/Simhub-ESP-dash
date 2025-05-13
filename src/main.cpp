@@ -2,6 +2,42 @@
 
 #include <EspSimHub.h>
 
+#include "esp_system.h"
+#include <esp_mac.h>
+
+
+// Fake an Arduino Mega
+#define SIGNATURE_0 0x1E
+#define SIGNATURE_1 0x98
+#define SIGNATURE_2 0x01
+
+// Configure FASTLED with proper pin order
+#define FASTLED_ESP8266_NODEMCU_PIN_ORDER
+
+// A unique identifier for the device.
+//  in the future we could use the bytes to generate some
+//  other format (ala UUID), but now it's just a unique 
+//  string tied to the device.
+
+String getMacAddress() {
+    uint8_t baseMac[6];
+    // Get MAC address for WiFi station
+    //esp_read_mac(baseMac, ESP_MAC_WIFI_STA);
+    char baseMacChr[18] = {0};
+    sprintf(baseMacChr, "%02X:%02X:%02X:%02X:%02X:%02X", baseMac[0], baseMac[1], baseMac[2], baseMac[3], baseMac[4], baseMac[5]);
+    return (baseMacChr);
+}
+
+String getUniqueId() {
+
+	unsigned char mac_base[6] = {0};
+    esp_efuse_mac_get_default(mac_base);
+    esp_read_mac(mac_base, ESP_MAC_EFUSE_CUSTOM);
+ return getMacAddress();
+}
+//Call function to get custom Mac address
+
+
 
 /**
  * Enable ESP-NOW or WiFi or use Serial
@@ -1038,8 +1074,8 @@ ECrowneJoystick Joystick;
 // J revision sketch. Don't modify this
 #define VERSION 'j'
 
-#include "SHCustomProtocol.h"
-SHCustomProtocol shCustomProtocol;
+#include "SHRGBDisplay.h"
+SHRGBDisplay SHRGBDisplay;
 #include "SHCommands.h"
 #include "SHCommandsGlcd.h"
 unsigned long lastMatrixRefresh = 0;
@@ -1161,7 +1197,7 @@ void idle(bool critical) {
 			UpdateGamepadState();
 		}
 #endif
-		shCustomProtocol.idle();
+		SHRGBDisplay.idle();
 	}
 }
 
@@ -1234,7 +1270,7 @@ void setup()
 #endif
 gfx->begin();
 	FlowSerialBegin(19200);
-	shCustomProtocol.setup();
+	SHRGBDisplay.setup();
 	
 	arqserial.setIdleFunction(idle);
 	delayMicroseconds(3000000);
@@ -1405,7 +1441,7 @@ gfx->begin();
 	InitEncoders();
 #endif
 
-	shCustomProtocol.setup();
+	SHRGBDisplay.setup();
 	arqserial.setIdleFunction(idle);
 
 #if(GAMEPAD_AXIS_01_ENABLED == 1)
@@ -1459,7 +1495,7 @@ void loop() {
 #ifdef INCLUDE_GAMEPAD
 	UpdateGamepadState();
 #endif
-	shCustomProtocol.loop();
+	SHRGBDisplay.loop();
 
 	// Wait for data
 	if (FlowSerialAvailable() > 0) {
