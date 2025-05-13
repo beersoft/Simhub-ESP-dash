@@ -211,7 +211,8 @@ public:
 
 		//	gfx->setTextColor(MAROON, RGB565_DDGREY); // IsInPitLane
 		//	drawString(dashData["CurrentDateTime"], CELL_WIDTH * 7.5, ROWS * CELL_HEIGHT - HALF_CELL_HEIGHT, 2, gfx);
-		//	render_dash();
+		//	
+		render_dash();
 	}
 
 	void idle()
