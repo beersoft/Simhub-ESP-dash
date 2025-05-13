@@ -2,6 +2,28 @@
 
 #include <EspSimHub.h>
 
+#include "esp_system.h"
+#include <esp_mac.h>
+
+/*
+
+String getMacAddress() {
+    uint8_t baseMac[6];
+    // Get MAC address for WiFi station
+    //esp_read_mac(baseMac, ESP_MAC_WIFI_STA);
+    char baseMacChr[18] = {0};
+    sprintf(baseMacChr, "%02X:%02X:%02X:%02X:%02X:%02X", baseMac[0], baseMac[1], baseMac[2], baseMac[3], baseMac[4], baseMac[5]);
+    return (baseMacChr);
+}
+
+String getUniqueId() {
+
+	unsigned char mac_base[6] = {0};
+    esp_efuse_mac_get_default(mac_base);
+    esp_read_mac(mac_base, ESP_MAC_EFUSE_CUSTOM);
+ return getMacAddress();
+}
+*/
 //Call function to get custom Mac address
 
 // Fake an Arduino Mega
@@ -1247,13 +1269,13 @@ void setup()
 #ifdef INCLUDE_FUELGAUGE
 	shFUELPIN.SetValue((int)80);
 #endif
-gfx->begin();
+//gfx->begin();
 	FlowSerialBegin(19200);
-	SHRGBDisplay.setup();
+	//SHRGBDisplay.setup();
 	
 	arqserial.setIdleFunction(idle);
-	delayMicroseconds(3000000);
-	if (FlowSerialAvailable() > 0)	gfx->fillScreen(BLUE);
+	//delayMicroseconds(3000000);
+	//if (FlowSerialAvailable() > 0)	gfx->fillScreen(BLUE);
 
 #ifdef INCLUDE_GAMEPAD
 	Joystick.begin({ .vendorId = VENDOR_ID, .productId = PRODUCT_ID, .name = DEVICE_NAME, .manufacturer = MANUFACTURER_NAME});
@@ -1515,9 +1537,7 @@ void loop() {
 				case 'G': Command_GearData(); break;
 				case 'L': Command_I2CLCDData(); break;
 				case 'K': Command_GLCDData();  break; // Nokia | OLEDS
-				case 'P': Command_CustomProtocolData(); 
-				Command_SHRGBDisplay();
-				break;
+				case 'P': Command_CustomProtocolData(); break;
 				case '8': Command_SetBaudrate(); break;
 			}
 		}

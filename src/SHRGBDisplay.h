@@ -108,6 +108,7 @@ private:
 public:
 	void setup()
 	{
+		gfx->begin();
 		terminalPrintln("INIT Dash", gfx);
 		//	init_past();
 		// gfx->begin();
