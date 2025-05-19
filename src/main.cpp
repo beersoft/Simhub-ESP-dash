@@ -55,7 +55,13 @@ String getUniqueId() {
  */
 #if CONNECTION_TYPE == ESP_NOW
 // MAC Address of esp connected to the computer directly, not this device
-#define ESPNOW_PEER_MAC {0x34, 0x85, 0x18, 0x90, 0x7A, 0x00}
+
+
+//E4:B0:63:B4:A8:90
+//da:3b:da:71:6a:e0
+uint8_t mac[6] = {218, 59, 218, 113, 106, 224};
+#define ESPNOW_PEER_MACx {0x34, 0x85, 0x18, 0x90, 0x7A, 0x00}
+#define ESPNOW_PEER_MAC 	 //, 59 , 218, 113, 106, 224}																																																																										0x144}
 #define ESPNOW_WIFI_CHANNEL 1
 #endif // end CONNECTION_TYPE == ESP_NOW
 
@@ -1250,8 +1256,137 @@ void buttonMatrixStatusChanged(int buttonId, byte Status) {
 }
 #endif
 
+//****bluetooth hack! */
+
+
+#include <BleSerial.h>
+#include <esp_attr.h>
+#include <esp_task_wdt.h>
+#include <driver/rtc_io.h>
+#include <esp_mac.h>  
+
+const int BUFFER_SIZE = 8192;
+const int STACK_SIZE = 8192;
+
+
+BleSerial SerialBT;
+
+uint8_t unitMACAddress[6];  // Use MAC address in BT broadcast and display
+char deviceName[20];        // The serial string that is broadcast.
+
+
+uint8_t bleReadBuffer[BUFFER_SIZE];
+uint8_t serialReadBuffer[BUFFER_SIZE];
+
+void startBluetooth() {
+  // Get unit MAC address
+  esp_read_mac(unitMACAddress, ESP_MAC_WIFI_STA);
+  
+  // Convert MAC address to Bluetooth MAC (add 2): https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-reference/system/system.html#mac-address
+  unitMACAddress[5] += 2;                                                          
+  
+  //Create device name
+  sprintf(deviceName, "BleBridge-%02X%02X", unitMACAddress[4], unitMACAddress[5]); 
+
+  //Init BLE Serial
+  SerialBT.begin(deviceName);
+  SerialBT.setTimeout(10);
+}
+
+//Task for reading Serial Port
+void ReadSerialTask(void *e) {
+  while (true) {
+    if (Serial.available()) {
+      auto count = Serial.readBytes(serialReadBuffer, BUFFER_SIZE);
+      SerialBT.write(serialReadBuffer, count);
+    }
+    delay(20);
+  }
+}
+
+//Task for reading BLE Serial
+void ReadBtTask(void *e) {
+  while (true) {
+    if (SerialBT.available()) {
+      auto count = SerialBT.readBytes(bleReadBuffer, BUFFER_SIZE);
+      Serial.write(bleReadBuffer, count);
+    }
+    delay(20);
+  }
+}
+
+
+
 void setup()
 {
+	FlowSerialBegin(19200);
+	arqserial.setIdleFunction(idle);
+	{
+		//gfx->begin();
+
+		//Start Serial
+	//	Serial.begin(115200);
+	//	Serial.setRxBufferSize(BUFFER_SIZE);
+	//	Serial.setTimeout(10);
+	  
+		//Start BLE
+		startBluetooth();
+	  
+		//Disable watchdog timers
+	//	disableCore0WDT();
+	//	disableCore1WDT();
+	//	disableLoopWDT();
+	//	esp_task_wdt_delete(NULL);
+	  
+		//Start tasks
+	//	xTaskCreate(ReadSerialTask, "ReadSerialTask", STACK_SIZE, NULL, 1, NULL);
+	//	xTaskCreate(ReadBtTask, "ReadBtTask", STACK_SIZE, NULL, 1, NULL);
+	  }
+
+	 
+	  //SHRGBDisplay.setup();
+	  
+	 
+
+	#ifdef showmac
+	Serial.begin(115200);
+	Serial.print("ESP Board BASE MAC Address:  ");
+	Serial.println(WiFi.macAddress());
+	
+	uint8_t sta_mac[6];
+	char buffer [6];
+	esp_efuse_mac_get_default(sta_mac);
+  
+	esp_read_mac(sta_mac, ESP_MAC_WIFI_SOFTAP);
+  
+	Serial.print("SOFT AP MAC Address:  ");
+	
+	sprintf(buffer, "%02X:%02X:%02X:%02X:%02X:%02X", sta_mac[0], sta_mac[1], sta_mac[2], sta_mac[3], sta_mac[4], sta_mac[5], sta_mac[6]);
+	Serial.println(buffer);
+  
+	esp_read_mac(sta_mac, ESP_MAC_WIFI_STA);
+  
+	Serial.print("STATION MAC Address:  ");
+	
+	sprintf(buffer, "%02X:%02X:%02X:%02X:%02X:%02X", sta_mac[0], sta_mac[1], sta_mac[2], sta_mac[3], sta_mac[4], sta_mac[5], sta_mac[6]);
+	Serial.println(buffer);
+  
+	esp_read_mac(sta_mac, ESP_MAC_BT);
+  
+	Serial.print("BLUETOOTH MAC Address:  ");
+	
+	sprintf(buffer, "%02X:%02X:%02X:%02X:%02X:%02X", sta_mac[0], sta_mac[1], sta_mac[2], sta_mac[3], sta_mac[4], sta_mac[5], sta_mac[6]);
+	Serial.println(buffer);
+  
+	esp_read_mac(sta_mac, ESP_MAC_ETH);
+  
+	Serial.print("ETHERNET MAC Address:  ");
+	
+	sprintf(buffer, "%02X:%02X:%02X:%02X:%02X:%02X\n", sta_mac[0], sta_mac[1], sta_mac[2], sta_mac[3], sta_mac[4], sta_mac[5], sta_mac[6]);
+	Serial.println(buffer);
+	Serial.println("   done!  ");
+	Serial.end();
+	#endif
 #if CONNECTION_TYPE != SERIAL
 #if DEBUG_BRIDGE
 	Serial.begin(115200);
@@ -1269,14 +1404,13 @@ void setup()
 #ifdef INCLUDE_FUELGAUGE
 	shFUELPIN.SetValue((int)80);
 #endif
-//gfx->begin();
-	FlowSerialBegin(19200);
-	//SHRGBDisplay.setup();
-	
-	arqserial.setIdleFunction(idle);
-	//delayMicroseconds(3000000);
-	//if (FlowSerialAvailable() > 0)	gfx->fillScreen(BLUE);
 
+
+
+
+
+
+	
 #ifdef INCLUDE_GAMEPAD
 	Joystick.begin({ .vendorId = VENDOR_ID, .productId = PRODUCT_ID, .name = DEVICE_NAME, .manufacturer = MANUFACTURER_NAME});
 #endif

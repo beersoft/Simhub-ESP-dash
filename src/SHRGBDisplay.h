@@ -214,6 +214,8 @@ public:
 		//	drawString(dashData["CurrentDateTime"], CELL_WIDTH * 7.5, ROWS * CELL_HEIGHT - HALF_CELL_HEIGHT, 2, gfx);
 		//	
 		render_dash();
+		gfx->setTextColor(YELLOW, BLACK);
+		drawString(getUniqueId(), 20,SCREEN_HEIGHT -40 , 2, gfx);
 	}
 
 	void idle()
@@ -466,7 +468,7 @@ public:
 	}
 	int32_t temp(String temp)
 	{
-		if (temp.toInt() < 70)
+		if (temp.toInt() < 60)
 			return (CYAN);
 		if (temp.toInt() < 90)
 			return (GREEN);
@@ -480,7 +482,7 @@ public:
 			return (CYAN);
 		if (temp.toInt() < 600)
 			return (GREEN);
-		if (temp.toInt() < 800)
+		if (temp.toInt() < 700)
 			return (YELLOW);
 		if (temp.toInt() < 800)
 			return (ORANGE);
