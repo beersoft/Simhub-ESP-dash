@@ -93,7 +93,7 @@ void clearTerminal(Arduino_GFX *gfx) {
 }
 
 void terminalPrintln(String text, Arduino_GFX *gfx) {
-	if (terminalCursor > 200) {
+	if (terminalCursor > 20) {
 		clearTerminal(gfx);
 	}
 	gfx->setCursor(0, terminalCursor * 12);

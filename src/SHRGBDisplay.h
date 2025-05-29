@@ -13,28 +13,28 @@
 
 // A unique identifier for the device.
 //  in the future we could use the bytes to generate some
-//  other format (ala UUID), but now it's just a unique 
+//  other format (ala UUID), but now it's just a unique
 //  string tied to the device.
 
 
 String getMacAddress() {
-    uint8_t baseMac[6];
-    // Get MAC address for WiFi station
-    //esp_read_mac(baseMac, ESP_MAC_WIFI_STA);
-    char baseMacChr[18] = {0};
-    sprintf(baseMacChr, "%02X:%02X:%02X:%02X:%02X:%02X", baseMac[0], baseMac[1], baseMac[2], baseMac[3], baseMac[4], baseMac[5]);
-    return String(baseMacChr);
+	uint8_t baseMac[6];
+	// Get MAC address for WiFi station
+	//esp_read_mac(baseMac, ESP_MAC_WIFI_STA);
+	char baseMacChr[18] = {0};
+	sprintf(baseMacChr, "%02X:%02X:%02X:%02X:%02X:%02X", baseMac[0], baseMac[1], baseMac[2], baseMac[3], baseMac[4], baseMac[5]);
+	return String(baseMacChr);
 }
 
 String getUniqueId() {
 
    // byte mac[6];
-    uint8_t mac[8];
-   
-    esp_efuse_mac_get_default(mac);
+	uint8_t mac[8];
+
+	esp_efuse_mac_get_default(mac);
    mac = esp_read_mac(ESP_MAC_EFUSE_CUSTOM);
  return getMacAddress();
-    return WiFi.macAddress();
+	return WiFi.macAddress();
 }
 //Call function to get custom Mac address
 
@@ -61,7 +61,6 @@ String getUniqueId() {
 
 #define DEVICE_NAME "ESP-SimHubDisplay 1"
 
-
 // https://github.com/eCrowneEng/ESP-SimHub-ESP32S3-SCREEN/issues/1
 // 8048S043 - 800x480, capacitive touch
 Arduino_ESP32RGBPanel *rgbpanel = new Arduino_ESP32RGBPanel(
@@ -80,14 +79,16 @@ static const int SCREEN_WIDTH = PIXEL_WIDTH;
 static const int SCREEN_HEIGHT = PIXEL_HEIGHT;
 static const int X_CENTER = SCREEN_WIDTH / 2;
 static const int Y_CENTER = SCREEN_HEIGHT / 2;
-static const int ROWS = 13;
-static const int COLS = 11;
+
 static const int titlefont = 2;
 static const int itemfont = 2;
-static const int CELL_WIDTH = 72; // SCREEN_WIDTH / COLS;
+static const int CELL_WIDTH = 40; // SCREEN_WIDTH / COLS;
 static const int HALF_CELL_WIDTH = CELL_WIDTH / 2;
-static const int CELL_HEIGHT = 36; // SCREEN_HEIGHT / ROWS;
+static const int CELL_HEIGHT = 30; // SCREEN_HEIGHT / ROWS;
 static const int HALF_CELL_HEIGHT = CELL_HEIGHT / 2;
+static const int ROWS = round(SCREEN_WIDTH / CELL_WIDTH);
+static const int COLS = round(SCREEN_HEIGHT / CELL_HEIGHT);
+
 static const int COL[] = {0, CELL_WIDTH, CELL_WIDTH * 2, CELL_WIDTH * 3, CELL_WIDTH * 4, CELL_WIDTH * 5, CELL_WIDTH * 6, CELL_WIDTH * 7, CELL_WIDTH * 8};
 static const int ROW[] = {0, CELL_HEIGHT, CELL_HEIGHT * 2, CELL_HEIGHT * 3, CELL_HEIGHT * 4, CELL_HEIGHT * 5, CELL_HEIGHT * 6, CELL_HEIGHT * 7, CELL_HEIGHT * 8};
 
@@ -95,6 +96,7 @@ static const int ROW[] = {0, CELL_HEIGHT, CELL_HEIGHT * 2, CELL_HEIGHT * 3, CELL
 
 std::map<String, String> liveData;
 std::map<String, String> dashData;
+std::map<String, String> lastData;
 
 class SHRGBDisplay
 {
@@ -109,6 +111,8 @@ public:
 	void setup()
 	{
 		gfx->begin();
+		gfx->setFont(u8g2_font_spleen12x24_mn);
+		splash();
 		terminalPrintln("INIT Dash", gfx);
 		//	init_past();
 		// gfx->begin();
@@ -119,6 +123,9 @@ public:
 
 #endif
 
+	}
+	void splash() {
+	
 		gfx->setTextColor(RGB565(0xff, 0x66, 0x00));
 
 		// drawCentreCentreString(DEVICE_NAME, SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 4, gfx);
@@ -134,88 +141,187 @@ public:
 		gfx->drawBitmap(1, CELL_HEIGHT * 6 - 30, LOGO_bitmap_gamehub_icon_small_text_1, 400, 80, BLACK, WHITE);
 
 		gfx->setTextColor(RGB565(0xff, 0x66, 0x00));
-		delayMicroseconds(10000);
+	//	delayMicroseconds(10000);
 		// render_dash();
 
 		// gfx->fillRoundRect(0, SCREEN_HEIGHT/3, SCREEN_WIDTH, SCREEN_HEIGHT/3 + 20, 5, WHITE);
-
-		gfx->setTextColor(RGB565(0xff, 0x66, 0x00));
-		drawString(DEVICE_NAME, 20, SCREEN_HEIGHT -60, 2, gfx);
-		gfx->setTextColor(YELLOW, BLACK);
-		drawString(getUniqueId(), 20,SCREEN_HEIGHT -40 , 2, gfx);
-
+		/*
+				gfx->setTextColor(RGB565(0xff, 0x66, 0x00));
+				drawString(DEVICE_NAME, 20, SCREEN_HEIGHT - 60, 2, gfx);
+				gfx->setTextColor(YELLOW, BLACK);
+				drawString(getUniqueId(), 20, SCREEN_HEIGHT - 40, 2, gfx);
+		*/
 		//
 		/*
 
 		*/
-		// read("bob");
-		read();
+		//
+		// read("bob:bob");
+		// if (!serialdata != NULL && !hasReceivedData)
+		{
+		}
+		//
+		//read();
+		if (hasReceivedData == true)
+			drawbackground = true;
+			//if(dashData["CurrentDateTime"]!=NULL)
+			{
+		//gfx->fillScreen(RGB565_DDGREY);
+	}
 	}
 	String set_value(String data = "")
 	{
 
 		//	String data = FlowSerialReadStringUntil(';');
 		int split = data.indexOf(":");
+		String value = data.substring(split + 1);
 		String key = data.substring(0, split);
 		if (key > "")
 		{
-			dashData[key] = data.substring(split + 1);
+			//	terminalPrintln(key,gfx);
+			// if (value != lastData[key])
+			dashData[key] = value;
 			// LiveData[name] = "0";
-
+			lastData[key] = value;
 			return (dashData[key]);
 		}
 		return data;
 	}
 
-	void read(String stuff = "")
+	void clear_data()
 	{
+
+		dashData["FlashingLights"] == NULL;
+		dashData["LapInvalidated"] == NULL;
+		dashData["Gear"] == NULL;
+		dashData["SpeedKmh"] == NULL;
+		dashData["Rpms"] == NULL;
+		dashData["RPMPercent"] == NULL;
+		dashData["mDeltaBest"] == NULL;
+		dashData["SessionBestLiveDeltaProgressSeconds"] == NULL;
+		dashData["ERSPercent"] == NULL;
+		dashData["IsInPitLane"] == NULL;
+		dashData["PitLimiterOn"] == NULL;
+		dashData["Flag_Yellow"] == NULL;
+		dashData["FuelPercent"] == NULL;
+		dashData["ERSPercent"] == NULL;
+		dashData["CompletedLaps"] == NULL;
+		dashData["Position"] == NULL;
+		dashData["Geara"] == NULL;
+		dashData["LastLapTime"] == NULL;
+		dashData["BestLapTime"] == NULL;
+		dashData["TCLevel"] == NULL;
+		dashData["ABSLevel"] == NULL;
+		dashData["BrakeBias"] == NULL;
+		dashData["Fuel"] == NULL;
+		dashData["EngineMap"] == NULL;
+		dashData["Fuel_RemainingLaps"] == NULL;
+		dashData["Fuel_CurrentLapConsumption"] == NULL;
+		dashData["TyrePressureFrontLeft"] == NULL;
+		dashData["TyrePressureFrontRight"] == NULL;
+		dashData["TyrePressureRearLeft"] == NULL;
+		dashData["TyrePressureRearRight"] == NULL;
+		dashData["BrakeTemperatureFrontLeft"] == NULL;
+		dashData["BrakeTemperatureFrontRight"] == NULL;
+		dashData["BrakeTemperatureRearLeft"] == NULL;
+		dashData["BrakeTemperatureRearRight"] == NULL;
+		dashData["TyreTemperatureFrontLeft"] == NULL;
+		dashData["TyreTemperatureFrontRight"] == NULL;
+		dashData["TyreTemperatureRearLeft"] == NULL;
+		dashData["TyreTemperatureRearRight"] == NULL;
+		dashData["CarSettings_RPMShiftLight2"] == NULL;
+		dashData["CarSettings_RPMShiftLight1"] == NULL;
+		dashData["Flag_Checkered"] == NULL;
+		dashData["Flag_Black"] == NULL;
+		dashData["Flag_Blue"] == NULL;
+		dashData["Flag_White"] == NULL;
+		dashData["EstimatedDelta"] == NULL;
+		dashData["CompactDelta"] == NULL;
+		dashData["SplitDelta"] == NULL;
+		dashData["CarSettings_CurrentDisplayedRPMPercent"] == NULL;
+		dashData["CurrentLapTime"] == NULL;
+		dashData["ABSActive"] == NULL;
+		dashData["TCActive"] == NULL;
+		dashData["CurrentDateTime"] == NULL;
+		dashData["TCLevel"] == NULL;
+
+		dashData["Fuel_RemainingLaps"] == NULL;
+	}
+
+	void read(String serialdata_test = "")
+	{
+		// hasReceivedData = false;
+		int refresh = 0;
 		// dashData=liveData;
-		String stuff2 = FlowSerialReadStringUntil('\n');
-	//	if (!stuff2.length() && !hasReceivedData)
-	//		stuff2 = "SpeedKmh:000;Gear:-;CarSettings_CurrentDisplayedRPMPercent:0;fuelp:69;CarSettings_RPMRedLineSetting:0;Rpms:0;LapInvalidated:0;CurrentLapTime:-;LastLapTime:-;BestLapTime:-;CompactDelta:-;SessionBestLiveDeltaProgressSeconds:0.00;CompletedLaps:0;Position:1;TCLevel:0;TCActive:1;ABSLevel:0;ABSActive:0;BrakeBias:0;Fuel:0;EngineMap:0;Fuel_RemainingLaps:-;Fuel_CurrentLapConsumption:-;IsInPitLane:1;PitLimiterOn:1;TyrePressureFrontLeft:00.0;TyrePressureFrontRight:00.0;TyrePressureRearLeft:00.0;TyrePressureRearRight:00.0;BrakeTemperatureFrontLeft:9000;BrakeTemperatureFrontRight:700;BrakeTemperatureRearLeft:600;BrakeTemperatureRearRight:800;TyreTemperatureFrontLeft:70;TyreTemperatureFrontRight:70;TyreTemperatureRearLeft:70;TyreTemperatureRearRight:1000;CarSettings_RPMShiftLight1:0;CarSettings_RPMShiftLight2:0;Flag_Checkered:0;Flag_Black:0;Flag_Blue:0;Flag_White:0;Flag_Yellow:1;mHeadlights:0;CurrentDateTime:******************;";
-		int index = 1;
-		int slen = 50;
-		slen = stuff2.lastIndexOf(";");
-		int lsplit = 0;
-		int i;
+		// if(serialdata_test=="")
+		String serialdata = "SpeedKmh:123;Gear:0;CarSettings_CurrentDisplayedRPMPercent:50;FuelPercent:69;CarSettings_RPMRedLineSetting:0;Rpms:1234;LapInvalidated:0;CurrentLapTime:00:00.000;LastLapTime:00:00.000;BestLapTime:00:00.000;CompactDelta:-1.234;SessionBestLiveDeltaProgressSeconds:0.00;CompletedLaps:000;Position:001;TCLevel:1;TCActive:1;ABSLevel:1;ABSActive:0;BrakeBias:50;Fuel:500;EngineMap:1;Fuel_RemainingLaps:-;Fuel_CurrentLapConsumption:-;IsInPitLane:1;PitLimiterOn:1;TyrePressureFrontLeft:00.0;TyrePressureFrontRight:00.0;TyrePressureRearLeft:00.0;TyrePressureRearRight:00.0;BrakeTemperatureFrontLeft:9000;BrakeTemperatureFrontRight:700;BrakeTemperatureRearLeft:600;BrakeTemperatureRearRight:800;TyreTemperatureFrontLeft:70;TyreTemperatureFrontRight:70;TyreTemperatureRearLeft:70;TyreTemperatureRearRight:1000;CarSettings_RPMShiftLight1:0;CarSettings_RPMShiftLight2:0;Flag_Checkered:0;Flag_Black:0;Flag_Blue:0;Flag_White:0;Flag_Yellow:1;mHeadlights:0;CurrentDateTime:******************;";
+		// serialdata = serialdata + "SplitDelta:;CarSettings_CurrentDisplayedRPMPercent:39;CurrentLapTime:01:27.610;ABSActive:1;TCActive:0;SpeedKmh:039;Rpms:02828;EstimatedDelta:-4.03;mDeltaBest:;SessionBestLiveDeltaProgressSeconds:-0.00;CompactDelta:-1.234;CurrentDateTime:5/21/2025 4:43:39 PM;";
+		//serialdata ="FlashingLights:0;LapInvalidated:0;Gear:0;SpeedKmh:0;Rpms:0;mDeltaBest:0;SessionBestLiveDeltaProgressSeconds:0;IsInPitLane:0;PitLimiterOn:0;Flag_Yellow:0;FuelPercent:0;ERSPercent:0;CompletedLaps:0;Position:0;Geara:0;LastLapTime:0;BestLapTime:0;TCLevel:0;ABSLevel:0;BrakeBias:0;Fuel:0;EngineMap:0;Fuel_RemainingLaps:0;Fuel_CurrentLapConsumption:0;TyrePressureFrontLeft:0;TyrePressureFrontRight:0;TyrePressureRearLeft:0;TyrePressureRearRight:0;BrakeTemperatureFrontLeft:0;BrakeTemperatureFrontRight:0;BrakeTemperatureRearLeft:0;BrakeTemperatureRearRight:0;TyreTemperatureFrontLeft:0;TyreTemperatureFrontRight:0;TyreTemperatureRearLeft:0;TyreTemperatureRearRight:0;CarSettings_RPMShiftLight2:0;CarSettings_RPMShiftLight1:0;Flag_Checkered:0;Flag_Black:0;Flag_Blue:0;Flag_White:0;EstimatedDelta:0;CompactDelta:0;SplitDelta:0;CarSettings_CurrentDisplayedRPMPercent:0;CurrentLapTime:0;ABSActive:0;TCActive:0;TCLevel:0;CurrentDateTime:0;";
+		
+		int looper = 0;
 		String key;
 		String value;
-		int split;
-		int row = 10;
+		clear_data();
+		// String
+		serialdata = FlowSerialReadStringUntil('\n');
+		//	gfx->setTextColor(YELLOW, BLACK);
+		//	terminalPrintln(serialdata,gfx);
+		//	drawString(serialdata, 20, SCREEN_HEIGHT - 60, 2, gfx);
 
-		for (int i = 0; i < slen - 1; i++)
+		if (serialdata != NULL)
 		{
-			row++;
-			split = stuff2.indexOf(";", i);
-			// if(i != split)
+			int index = 1;
+			int slen = 50;
+			slen = serialdata.lastIndexOf(";");
+			int lsplit = 0;
+			int i;
+			String key;
+			String value;
+			int split;
+			int row = 10;
+
+			for (int i = 0; i < slen - 1; i++)
 			{
-				key = stuff2.substring(i, split);
+				row++;
+				split = serialdata.indexOf(";", i);
+				// if(i != split)
+				{
+					key = serialdata.substring(i, split);
+				}
+				if (i < split)
+				{
+					set_value(key);
+					i = split;
+				}
 			}
-			if (i < split)
+
+			if(dashData["CurrentDateTime"]!=NULL)
 			{
-				set_value(key);
-				i = split;
+				hasReceivedData = true;
+				render_dash();
 			}
 		}
-
-		if (dashData["CurrentDateTime"] > "")
-		{
-			hasReceivedData = true;
-			render_dash();
-		}
+		FlowSerialWrite(0x15);
 	}
 
 	// Called once per arduino loop, timing can't be predicted,
 	// but it's called between each command sent to the arduino
 	void loop()
 	{
-
+		/*
+		if(dashData["CurrentDateTime"]!=NULL){
+		render_dash();
 		//	gfx->setTextColor(MAROON, RGB565_DDGREY); // IsInPitLane
 		//	drawString(dashData["CurrentDateTime"], CELL_WIDTH * 7.5, ROWS * CELL_HEIGHT - HALF_CELL_HEIGHT, 2, gfx);
-		//	
-		render_dash();
+		//
+		// if(hasReceivedData)
+		//();
 		gfx->setTextColor(YELLOW, BLACK);
-		drawString(getUniqueId(), 20,SCREEN_HEIGHT -40 , 2, gfx);
+
+		drawString( "\n " + dashData["CurrentDateTime"], 20, SCREEN_HEIGHT - 20, 1, gfx);
+	}
+		hasReceivedData = false;
+	*/
 	}
 
 	void idle()
@@ -228,26 +334,80 @@ public:
 		// do_string("bob");
 		int nextpos = 0;
 
+		/*	itembox(0,0,1,1,RED); //gear
+			itembox(1,1,1,1,RED); //gear
+			itembox(2,2,1,1,RED); //gear
+			itembox(3,3,1,1,RED); //gear
+			itembox(4,4,1,1,RED); //gear
+			itembox(5,5,1,1,RED); //gear
+			itembox(6,6,1,1,RED); //gear
+			itembox(7,7,1,1,RED); //gear
+			itembox(8,8,1,1,RED); //gear
+			itembox(9,9,1,1,RED); //gear
+			itembox(10,10,1,1,RED); //gear
+			itembox(11,11,1,1,RED); //gear
+			itembox(12,12,1,1,RED); //gear
+			itembox(13,13,1,1,RED); //gear
+			itembox(14,14,1,1,RED); //gear
+			itembox(15,15,1,1,RED); //gear
+			itembox(16,16,1,1,RED); //gear
+			itembox(17,17,1,1,RED); //gear
+			itembox(18,18,1,1,RED); //gear
+			itembox(19,19,1,1,RED); //gear
+			//itembox(1,1,1,1,RED); //gear
+
+	*/
+
 		gfx->setTextColor(MAROON, RGB565_DDGREY);
 		//
-		if (dashData["gear"] != "0")
 
+		gfx->setTextColor(BLACK, RGB565_DDGREY); // IsInPitLane
+		gfx->setFont(u8g2_font_spleen32x64_mn);
+		// drawCentreCentreString("8", (SCREEN_WIDTH / 2) , (SCREEN_HEIGHT / 2) +128 +64 +5, 4, gfx);
+		gfx->setFont(u8g2_font_spleen12x24_mn);
+		if (dashData["Gear"] != NULL)
 		{
-			gfx->setTextColor(DARKGREEN, RGB565_DDGREY); // IsInPitLane
+			gfx->setTextColor(DARKGREEN, DARKGREY); // IsInPitLane
 			if (dashData["CarSettings_RPMShiftLight2"].toInt() >= 1)
 				gfx->setTextColor(MAROON, RGB565_DDGREY); // IsInPitLane
 
 			//
 			if (!drawbackground)
 			{
-				gfx->fillRect(0, CELL_HEIGHT * 3, CELL_WIDTH * 103, CELL_HEIGHT * 7, RGB565_DDGREY);
+				// gfx->fillRect(0, CELL_HEIGHT * 3, CELL_WIDTH * 103, CELL_HEIGHT * 7, RGB565_DDGREY);
 				drawbackground = true;
 				gfx->fillScreen(RGB565_DDGREY);
+				itembox(3, 5, 3, 2, DARKGREY); // pos
+				itembox(0, 5, 3, 2, DARKGREY); // lap
+
+				itembox(0, 7, 6, 3, DARKGREY);	// sp
+				itembox(0, 10, 6, 3, DARKGREY); // rpm
+
+				itembox(0, 2, 6, 3, DARKGREY); // delta
+
+				itembox(8, 5, 4, 8, DARKGREY); // gear
+				itembox(16, 2, 5, 3, DARKGREY); // flag
+
+				itembox(12, 5, 8, 3, DARKGREY);  // c
+				itembox(12, 8, 4, 2, DARKGREY);  // l
+				itembox(12, 10, 4, 2, DARKGREY); // b
 			}
-			gfx->fillRect(CELL_WIDTH * 4, CELL_HEIGHT * 9, CELL_WIDTH * 3, CELL_HEIGHT * 2, flag());
-			//	gfx->fillRect(CELL_WIDTH * 7, CELL_HEIGHT * 3, HALF_CELL_WIDTH * 1, CELL_HEIGHT * 7, flag());
-			gfx->drawRect(CELL_WIDTH * 4 + 1, CELL_HEIGHT * 3, CELL_WIDTH * 3, CELL_HEIGHT * 6, BLUE);
-			drawCentreCentreString(dashData["Gear"], SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2, 20, gfx); // Data
+			//	gfx->fillRect(CELL_WIDTH * 4, CELL_HEIGHT * 9, CELL_WIDTH * 3, CELL_HEIGHT * 2, flag());
+			// itembox(7,15,5,2,
+			//	gfx->fillRect(7, 15, 5, 2, flag());
+			// gfx->drawRect(CELL_WIDTH * 4 + 1, CELL_HEIGHT * 3, CELL_WIDTH * 3, CELL_HEIGHT * 6, BLUE);
+			gfx->setFont(u8g2_font_spleen32x64_mn);
+			// if(dashData["Gear"] != lastData["Gear"])
+			//	gfx->fillRect(CELL_HEIGHT * 8, CELL_HEIGHT * 3, CELL_HEIGHT * 6, CELL_HEIGHT * 6, RGB565_DDGREY);
+
+			{
+
+				drawCentreCentreString(dashData["Gear"], (CELL_WIDTH*10), (CELL_HEIGHT *16 ) , 4, gfx);
+
+				//	drawCentreCentreString("" +  + "", (SCREEN_WIDTH / 2) , (SCREEN_HEIGHT / 2) + 140, 2, gfx);
+			}
+			// Data
+			gfx->setFont(u8g2_font_spleen12x24_mn);
 			// if (prev_gear != dashData["Gear"])
 			{
 
@@ -257,41 +417,48 @@ public:
 			}
 		}
 
-		// if (dashData["Rpms"].toInt()>0)
+
+		if (dashData["SpeedKmh"] != NULL)
+		element2(0, 7, 6, 3, "SpeedKmh", WHITE, 0, 0, "KPH");
+
+		// gfx->drawRect(1, 1, CELL_WIDTH * COLS, CELL_HEIGHT - 2, DARKGREY);
+		rpms();
+		//
+
+	
+
+		// mDeltaBest
+		// EstimatedLapTime_SessionBestBasedSimhub_EstimatedDelta
+		//if (dashData["EstimatedDelta"] != NULL)
 		{
-			gfx->fillRect((CELL_WIDTH * COLS / 100) * dashData["CarSettings_CurrentDisplayedRPMPercent"].toInt(), 1, CELL_WIDTH * COLS, CELL_HEIGHT - 2, DARKGREY);
-			// gfx->fillRect((SCREEN_WIDTH / 100) * CarSettings_RPMRedLineSetting.toInt() - 5, 1, SCREEN_WIDTH, CELL_HEIGHT - 2, RED);
-			gfx->fillRect(1, 1, (CELL_WIDTH * COLS / 100) * dashData["CarSettings_CurrentDisplayedRPMPercent"].toInt(), CELL_HEIGHT - 2, DARKGREEN);
-			//	(dashData["gCurrentDisplayedRPMPercentear"] = "0");
-			/*if(dashData["CarSettings_RPMShiftLight2"].toInt())
-			{			gfx->drawCircle(CELL_WIDTH * 6 + HALF_CELL_WIDTH, CELL_HEIGHT * 2, 31, DARKGREY);
-						gfx->drawCircle(CELL_WIDTH * 4 + HALF_CELL_WIDTH, CELL_HEIGHT * 2, 31, DARKGREY);
-						gfx->drawCircle(CELL_WIDTH * 6 + HALF_CELL_WIDTH, CELL_HEIGHT * 2, 31, DARKGREY);
-						gfx->fillCircle(CELL_WIDTH * 6 + HALF_CELL_WIDTH, CELL_HEIGHT * 2, 30, round(dashData["CarSettings_RPMShiftLight2"].toInt()) ? MAGENTA : RGB565_DDGREY);
-						gfx->fillCircle(CELL_WIDTH * 4 + HALF_CELL_WIDTH, CELL_HEIGHT * 2, 30, round(dashData["CarSettings_RPMShiftLight1"].toInt()) ? MAGENTA : RGB565_DDGREY);
-
-						gfx->fillCircle(CELL_WIDTH * 7 + HALF_CELL_WIDTH, CELL_HEIGHT * 2, 30, round(dashData["CarSettings_RPMShiftLight1"].toInt()) ? MAGENTA : RGB565_DDGREY);
-						gfx->fillCircle(CELL_WIDTH * 4 + HALF_CELL_WIDTH, CELL_HEIGHT * 2, 30, round(dashData["CarSettings_RPMShiftLight2"].toInt()) ? MAGENTA : RGB565_DDGREY);
-
-			}*/
-			element(0, 9, 4, 2, dashData["Rpms"], "Rpms", LIGHTGREY, 0, 0, "RPM");
-
-			// if (dashData["SpeedKmh"].toInt() >0)
-			element(0, 5, 4, 4, dashData["SpeedKmh"], "SpeedKmh", WHITE, 0, 0, "KPH");
+			//	gfx->setTextColor(WHITE, dashData["EstimatedLapTime_SessionBestBasedSimhub_EstimatedDelta"].indexOf('-') >= 0 ? GREEN : RED);
+		//		element2(15, 2, 5, 3, "EstimatedLapTime_SessionBestBasedSimhub_EstimatedDelta", dashData["EstimatedLapTime_SessionBestBasedSimhub_EstimatedDelta"].indexOf('-') >= 0 ? GREEN : RED, 3, 0, "Delta1");
+		}
+		// else
+		if (dashData["CompactDelta"] != NULL)
+		{
+			// itembox(0,2,5,3,DARKGREY); //delta
+		//	gfx->setTextColor(WHITE, dashData["CompactDelta"].indexOf('-') >= 0 ? GREEN : RED);
+		element2(0, 2, 6, 3, "CompactDelta", dashData["CompactDelta"].indexOf('-') >= 0 ? GREEN : RED, 3, 0, "Delta");
 		}
 
-		if (dashData["CompactDelta"].length())
+		if (dashData["mDeltaBest"] != NULL)
 		{
-			element(COLS - 2, 1, 2, 2, dashData["CompactDelta"], "CompactDelta", dashData["CompactDelta"].indexOf('-') >= 0 ? GREEN : RED, 3, 0, "Delta");
+			//	gfx->setTextColor(WHITE, dashData["mDeltaBest"].indexOf('-') >= 0 ? GREEN : RED);
+			//	element2(COLS - 2, ROWS -1, 3, 2, "mDeltaBest", dashData["mDeltaBest"].indexOf('-') >= 0 ? GREEN : RED, 3, 0, "Delta");
 		}
 
-		if (dashData["CurrentLapTime"].length())
-			element(COLS - 4, 3, 4, 2, dashData["CurrentLapTime"], "CurrentLapTime", dashData["LapInvalidated"] == "True" ? RED : WHITE, 0, 0, "Current");
+		//
+		if (dashData["CurrentLapTime"] != NULL )
+			element2(12, 5, 8, 3, "CurrentLapTime", dashData["LapInvalidated"] ? RED : WHITE, 0, 0, "Current");
 
-		if (dashData["LastLapTime"].length())
+		if (dashData["LastLapTime"] != NULL )
 		{
-			element(COLS - 4, 5, 4, 2, dashData["LastLapTime"], "LastLapTime", YELLOW, 0, 0, "Last");
-			element(COLS - 4, 7, 4, 2, dashData["BestLapTime"], "BestLapTime", MAGENTA, 0, 0, "Best");
+			element2(12, 8, 4, 2, "LastLapTime", YELLOW, 0, 0, "Last");
+		}
+		if (dashData["BestLapTime"] != NULL )
+		{
+			element2(12, 10, 4, 2, "BestLapTime", MAGENTA, 0, 0, "Best");
 		}
 		// drawCell(COL[0], ROW[0], , "sessionBestLiveDeltaSeconds", "Delta", "double", sessionBestLiveDeltaSeconds.indexOf('-') >= 0 ? GREEN : RED);
 
@@ -299,163 +466,287 @@ public:
 
 		// if (LiveData["sessionBestLiveDeltaProgressSeconds"] == "1")
 		//	element(COLS - 2, 8, 2, 1, sessionBestLiveDeltaProgressSeconds, "Delta Pogress", sessionBestLiveDeltaProgressSeconds.indexOf('-') >= 0 ? GREEN : RED, 0);
-		if (dashData["Position"].length())
-			element(0, 3, 2, 2, dashData["Position"], "Position", WHITE, 0, 0, "Pos");
-		if (dashData["CompletedLaps"].length())
-			element(2, 3, 2, 2, dashData["CompletedLaps"], "CompletedLaps", WHITE, 0, 0, "Lap", "");
-
-		// fuel
-		// if( dashData["fuelp"].toInt())
+		if (dashData["Position"] != NULL )
+			element2(3, 5, 3, 2, "Position", WHITE, 0, 0, "Pos");
+		if (dashData["CompletedLaps"] != NULL )
+			element2(0, 5, 3, 2, "CompletedLaps", WHITE, 0, 0, "Lap", "");
+//element2(15, 2, 5, 3
+		gfx->fillRect((CELL_WIDTH * 16) +1, (CELL_HEIGHT * 2)+1, (CELL_WIDTH * 4)-1, (CELL_HEIGHT * 3)-1, flag()); // flag
+		// if (hasReceivedData)
 		{
-			int hpos = HALF_CELL_WIDTH;
-			hpos = (COLS - 6) * (CELL_WIDTH +HALF_CELL_WIDTH);
-			int vpos = (ROWS - 4) * (CELL_HEIGHT  )+ HALF_CELL_HEIGHT;;
-			double fperc = (dashData["fuelp"].toFloat() / 100) * (HALF_CELL_WIDTH*3);
-			gfx->drawRect(hpos - HALF_CELL_WIDTH, vpos - HALF_CELL_HEIGHT, CELL_WIDTH * 2, CELL_HEIGHT * 4 +5, WHITE);
-			//drawString("Fuel", hpos - 30, vpos - 15, 2, gfx);						   // Data
-			drawString("Fuel: "+dashData["Fuel"] + "L", hpos -10, vpos + HALF_CELL_WIDTH - 20, 2, gfx); // Data
-			//hpos = hpos + 72;
-			 vpos = (ROWS - 2) * CELL_HEIGHT + HALF_CELL_HEIGHT;
-			gfx->fillRect(hpos -HALF_CELL_HEIGHT, vpos, (HALF_CELL_WIDTH*3), CELL_HEIGHT, DARKGREY);
-			gfx->fillRect(hpos -HALF_CELL_HEIGHT, vpos, fperc, CELL_HEIGHT, DARKGREEN);
+			tyres(16,8,0);
+			fuel(0,13);
+			warninglights(6,2);
+			statuslights(12,12);
+		}
+	}
+	void fuel(int x, int y)
+	{
+		// fuel
+		int hpos = HALF_CELL_WIDTH;
+		hpos = (x) * (CELL_WIDTH);
+		int vpos = (y) * (CELL_HEIGHT);
+		;
+
+		if (dashData["FuelPercent"] != NULL )
+		{
+			gfx->setTextColor(DARKGREY, RGB565_DDGREY);
+			gfx->drawRect(hpos, vpos, CELL_WIDTH * 5, CELL_HEIGHT * 2 + 5, DARKGREY);
+			drawString("Fuel: ", hpos + HALF_CELL_WIDTH, vpos + CELL_HEIGHT, 1, gfx);
+			double fperc = (dashData["FuelPercent"].toFloat() / 100) * (HALF_CELL_WIDTH * 4);
+
+			// drawString("Fuel", hpos - 30, vpos - 15, 2, gfx);						   // Data
+			// Data
+			drawString("" + dashData["Fuel"] + "L", hpos + HALF_CELL_WIDTH, vpos + CELL_WIDTH, 1, gfx); // Data
+			// hpos = (5) * (CELL_WIDTH);
+			//  hpos = hpos + 72;
+			// vpos = (ROWS - 1) * CELL_HEIGHT - HALF_CELL_HEIGHT;
+			gfx->fillRect(hpos + (CELL_WIDTH * 2), vpos + HALF_CELL_HEIGHT, (HALF_CELL_WIDTH * 4), CELL_HEIGHT * 1, DARKGREY);
+			gfx->fillRect(hpos + (CELL_WIDTH * 2), vpos + HALF_CELL_HEIGHT, fperc, CELL_HEIGHT * 1, DARKGREEN);
 			hpos = hpos + 144;
 			hpos = hpos + HALF_CELL_WIDTH;
-			// drawString( dashData["fuelp"] +"%", hpos, vpos +HALF_CELL_HEIGHT , 2, gfx); // Data
+			// drawString( dashData["FuelPercent"] +"%", hpos, vpos +HALF_CELL_HEIGHT , 2, gfx); // Data
+		}
+	}
+
+void rpms ()
+{
+	if (dashData["Rpms"] != NULL)
+	{
+		gfx->fillRect((CELL_WIDTH * COLS / 100) * dashData["RPMPercent"].toInt(), 1, CELL_WIDTH * COLS, (CELL_HEIGHT * 2) - 2, DARKGREY);
+		// gfx->fillRect((SCREEN_WIDTH / 100) * CarSettings_RPMRedLineSetting.toInt() - 5, 1, SCREEN_WIDTH, CELL_HEIGHT - 2, RED);
+		gfx->fillRect(1, 1, (CELL_WIDTH * COLS / 100) * dashData["RPMPercent"].toInt(), (CELL_HEIGHT * 2) - 2, DARKGREEN);
+
+		element2(0, 10, 6, 3, "Rpms", LIGHTGREY, 0, 0, "RPM");
+	}
+
+}
+
+	void tyres(int x,int y, int text=0)
+	{
+		int tix = ( (x) * CELL_WIDTH);;
+		int tiy = (y) * CELL_HEIGHT ;
+		int h;
+		int v;
+
+		h = ( (x) * CELL_WIDTH);
+		v = ((y) * CELL_HEIGHT + HALF_CELL_HEIGHT) +8;
+
+
+		int hfl = h;
+		int vfl = v;
+
+		int hfr = h +(CELL_WIDTH *2 )+HALF_CELL_WIDTH ;
+		int vfr = v ;//+(CELL_HEIGHT *3);
+
+		int hrl = h ;
+		int vrl = (v) + (CELL_HEIGHT *2) ;
+
+		int hrr =  h +(CELL_WIDTH *2 )+HALF_CELL_WIDTH ;
+		int vrr = (v) + (CELL_HEIGHT *2) ;
+
+		//tix = h;
+		//tiy = v;
+		gfx->setFont(u8g2_font_crox3cb_mn);
+		if (dashData["CurrentDateTime"]!= NULL)	gfx->drawRect(tix, tiy , CELL_WIDTH * 4, (CELL_HEIGHT * 4), DARKGREY);
+
+		if (dashData["TyrePressureFrontLeft"] || dashData["TyreTemperatureFrontLeft"] || dashData["BrakeTemperatureFrontLeft"])
+		{
+			if(text){
+			drawString(dashData["TyrePressureFrontLeft"], hfl, vfl, 1, gfx);
+			drawString(dashData["TyreTemperatureFrontLeft"], hfl, vfl + 20, 1, gfx);
+			drawString(dashData["BrakeTemperatureFrontLeft"], hfl, vfl + 40, 1, gfx);
+			}
+			// drawString(  dashData["TyrePressureFrontLeft"]+"\n"+dashData["TyreTemperatureFrontLeft"]+"\n"+dashData["BrakeTemperatureFrontLeft"], hfl, vfl,  1, gfx);
+
+			hfl = hfl + 50;
+			gfx->fillRect(hfl + 5, vfl - HALF_CELL_HEIGHT, 15, CELL_HEIGHT + HALF_CELL_HEIGHT, temp(dashData["TyreTemperatureFrontLeft"]));
+			gfx->fillRect(hfl + 20, vfl - (HALF_CELL_HEIGHT / 2), 15, CELL_HEIGHT, temp(dashData["BrakeTemperatureFrontLeft"]));
 		}
 
-		
-		int tix;
-		int tiy;
-		tix = (COLS - 2) * CELL_WIDTH;
-		tiy = (ROWS - 4) * CELL_HEIGHT + HALF_CELL_HEIGHT;
-		gfx->drawRect(tix, tiy - HALF_CELL_HEIGHT, CELL_WIDTH * 2, (CELL_HEIGHT * 4) + 5, WHITE);
-		tix = (tix + HALF_CELL_WIDTH) - 5;
-		tiy = tiy + HALF_CELL_HEIGHT;
-		drawCentreCentreString(dashData["TyrePressureFrontLeft"], tix + 15, tiy - HALF_CELL_HEIGHT, 2, gfx);
-		gfx->fillRect(tix + 0, tiy, 15, CELL_HEIGHT, temp(dashData["TyreTemperatureFrontLeft"]));
-		gfx->fillRect(tix + 15, tiy + (HALF_CELL_HEIGHT / 2), 10, HALF_CELL_HEIGHT, temp(dashData["BrakeTemperatureFrontLeft"]));
+		if (dashData["TyrePressureFrontLeft"] || dashData["TyreTemperatureFrontLeft"] || dashData["BrakeTemperatureFrontLeft"])
+		{
+			gfx->fillRect(hfr + 5, vfr - HALF_CELL_HEIGHT, 15, CELL_HEIGHT + HALF_CELL_HEIGHT, temp(dashData["TyreTemperatureFrontRight"]));
+			gfx->fillRect(hfr - 10, vfr - (HALF_CELL_HEIGHT / 2), 15, CELL_HEIGHT, temp(dashData["BrakeTemperatureFrontRight"]));
+			hfr = hfr + 30;
+			// tix = (COLS - 4) * CELL_WIDTH;
+			if(text){
+			drawString(dashData["TyrePressureFrontRight"], hfr, vfr, 1, gfx);
+			drawString(dashData["TyreTemperatureFrontRight"], hfr, vfr + 20, 1, gfx);
+			drawString(dashData["BrakeTemperatureFrontRight"], hfr, vfr + 40, 1, gfx);}
+		}
+		/**** */
 
-		tiy = tiy + CELL_HEIGHT + CELL_HEIGHT;
-		drawCentreCentreString(dashData["TyrePressureRearLeft"], tix + 15, tiy - HALF_CELL_HEIGHT, 2, gfx);
-		gfx->fillRect(tix + 0, tiy, 15, CELL_HEIGHT, temp(dashData["TyreTemperatureRearLeft"]));
-		gfx->fillRect(tix + 15, tiy + (HALF_CELL_HEIGHT / 2), 10, HALF_CELL_HEIGHT, temp(dashData["BrakeTemperatureRearLeft"]));
+		if (dashData["TyrePressureFrontLeft"] || dashData["TyreTemperatureFrontLeft"] || dashData["BrakeTemperatureFrontLeft"])
+		{
+			if(text){
+			drawString(dashData["TyrePressureRearLeft"], hrl, vrl, 1, gfx);
+			drawString(dashData["TyreTemperatureRearLeft"], hrl, vrl + 20, 1, gfx);
+			drawString(dashData["BrakeTemperatureRearLeft"], hrl, vrl + 40, 1, gfx);}
+			hrl = hrl + 50;
+			gfx->fillRect(hrl + 5, vrl - HALF_CELL_HEIGHT, 15, CELL_HEIGHT + HALF_CELL_HEIGHT, temp(dashData["TyreTemperatureRearLeft"]));
+			gfx->fillRect(hrl + 20, vrl - (HALF_CELL_HEIGHT / 2), 15, CELL_HEIGHT, temp(dashData["BrakeTemperatureRearLeft"]));
+		}
+		if (dashData["TyrePressureRearRight"] || dashData["TyreTemperatureRearRight"] || dashData["BrakeTemperatureRearRight"])
+		{
+			gfx->fillRect(hrr + 5, vrr - HALF_CELL_HEIGHT, 15, CELL_HEIGHT + HALF_CELL_HEIGHT, temp(dashData["TyreTemperatureRearRight"]));
+			gfx->fillRect(hrr - 10, vrr - (HALF_CELL_HEIGHT / 2), 15, CELL_HEIGHT, temp(dashData["BrakeTemperatureRearRight"]));
+			hrr = hrr + 30;
+			if(text){drawString(dashData["TyrePressureRearRight"], hrr, vrr, 1, gfx);
+			drawString(dashData["TyreTemperatureRearRight"], hrr, vrr + 20, 1, gfx);
+			drawString(dashData["BrakeTemperatureRearRight"], hrr, vrr + 40, 1, gfx);}
+		}
+	}
 
-		tix = (COLS - 1) * CELL_WIDTH;
-		tiy = ((ROWS - 4) * CELL_HEIGHT) + HALF_CELL_HEIGHT;
-		tix = tix + HALF_CELL_HEIGHT;
-		tiy = tiy + HALF_CELL_HEIGHT;
-
-		drawCentreCentreString(dashData["TyrePressureFrontRight"], tix + 15, tiy - HALF_CELL_HEIGHT, 2, gfx);
-		gfx->fillRect(tix - 0, tiy + (HALF_CELL_HEIGHT / 2), 10, HALF_CELL_HEIGHT, temp(dashData["BrakeTemperatureFrontRight"]));
-		gfx->fillRect(tix + 10, tiy, 15, CELL_HEIGHT, temp(dashData["TyreTemperatureFrontRight"]));
-
-		tiy = tiy + CELL_HEIGHT + CELL_HEIGHT;
-		drawCentreCentreString(dashData["TyrePressureRearRight"], tix + 15, tiy - HALF_CELL_HEIGHT, 2, gfx);
-		gfx->fillRect(tix, tiy + (HALF_CELL_HEIGHT / 2), 10, HALF_CELL_HEIGHT, temp(dashData["BrakeTemperatureRearRight"]));
-
-		gfx->fillRect(tix + 10, tiy, 15, CELL_HEIGHT, temp(dashData["TyreTemperatureRearRight"]));
-
-
+	void warninglights(int x = 0, int y = 1)
+	{
+		int nextpos;
+		int startpos =x * CELL_WIDTH;
+		int ypos = y * (CELL_HEIGHT );
+		int wl = CELL_HEIGHT ;
+		int lightwidth = 72;
 		uint16_t colour;
-		nextpos = 0;
-		if (dashData["ABSLevel"])
+		ypos=ypos+4;
+		startpos= startpos+4;
+		nextpos = startpos ;
+		gfx->setTextColor(RGB565_DDGREY, BLACK);
+		colour = RGB565_DDGREY;
+
+		// nextpos = nextpos + 72;
+		// nextpos = nextpos + 72;
+		// nextpos = nextpos + 72;
+
+		//nextpos = startpos + 16;
+		if (dashData["TCActive"] != NULL)
+		{
+
+			gfx->drawBitmap(nextpos, ypos, epd_bitmap_Stability_Control, 72, 72, setColor(ORANGE, dashData["TCActive"], RGB565_DDGREY, 1), setColor(ORANGE, dashData["TCActive"], RGB565_DDGREY));
+			nextpos = nextpos + (CELL_WIDTH*2 );
+		}
+
+		if (dashData["ABSActive"] != NULL)
+		{
+			gfx->drawBitmap(nextpos, ypos, epd_bitmap_ABS, 72, 72, setColor(YELLOW, dashData["ABSActive"], RGB565_DDGREY, 1), setColor(YELLOW, dashData["ABSActive"], RGB565_DDGREY));
+			nextpos = nextpos + (CELL_WIDTH*2 );
+		}
+
+		// TCActive.toInt() == 1 ? RED : RGB565_DDGREY);
+		if (dashData["brake"] != NULL)
+		{
+			gfx->drawBitmap(nextpos, ypos, epd_bitmap_Hand_Brake, 72, 72, setColor(ORANGE, dashData["brake"], RGB565_DDGREY));
+			nextpos = nextpos + (CELL_WIDTH*2 );
+		}
+
+		if (dashData["PitLimiterOn"] != NULL)
+		{
+			gfx->drawBitmap(nextpos, ypos, epd_bitmap_Pit_Limiter, 72, 72,
+							setColor(PURPLE, dashData["PitLimiterOn"], RGB565_DDGREY, 1),
+							setColor(PURPLE, dashData["PitLimiterOn"], RGB565_DDGREY));
+							nextpos = nextpos + (CELL_WIDTH*2 );
+		}
+
+		if (dashData["lights"] != NULL)
+		{
+			gfx->drawBitmap(nextpos, ypos, epd_bitmap_Lights, 72, 72, setColor(BLUE, dashData["FlashingLightw"], RGB565_DDGREY, 1), setColor(BLUE, dashData["FlashingLightw"], RGB565_DDGREY));
+			nextpos = nextpos + (CELL_WIDTH*2 );
+		}
+		if (dashData["LapInvalidated"] != NULL)
+		{
+			gfx->drawBitmap(nextpos, ypos, iconHand_Brake, 72, 72, setColor(RED, dashData["LapInvalidated"], RGB565_DDGREY, 1), setColor(RED, dashData["LapInvalidated"], RGB565_DDGREY));
+			nextpos = nextpos + (CELL_WIDTH*2 );
+		}
+		if (dashData["wipers"] != NULL)
+		{
+			gfx->drawBitmap(nextpos, ypos, epd_bitmap_Toggle_Wiper, 72, 72, setColor(GREEN, dashData["wipers"], RGB565_DDGREY, 1), setColor(PURPLE, dashData["wipers"], RGB565_DDGREY));
+			// gfx->drawBitmap(144,1,epd_bitmap_Ignition,72,72,ignition == "1" ? RED : DARKGREY);
+			nextpos = nextpos + (CELL_WIDTH*2 );
+		}
+
+		// drawBitmap(1,1,epd_bitmap_Toggle_Wiper,72,72,RED,BLACK);
+		/*
+				element(1,1,1,1,absLevel,"ABS",RED,0);
+				element(4,1,3,2,absLevel ,"HAT",GREEN,1);
+		*/
+	}
+
+
+
+	void statuslights(int x = 0, int y = 1)
+	{
+		int nextpos;
+		int startpos =x * CELL_WIDTH;
+		int ypos = y * (CELL_HEIGHT );
+		int wl = CELL_HEIGHT ;
+		int lightwidth = 72;
+		uint16_t colour;
+		startpos= startpos+4;
+		ypos = ypos + 4;
+
+		nextpos = startpos ;
+		gfx->setTextColor(RGB565_DDGREY, BLACK);
+		colour = RGB565_DDGREY;
+		if (dashData["ABSLevel"] != NULL)
 		{
 			colour = setColor(ORANGE, dashData["ABSLevel"], RGB565_DDGREY);
-			gfx->setTextColor(colour, BLACK);
-			gfx->drawBitmap(nextpos, CELL_HEIGHT, iconABS_plus, 72, 72, colour, BLACK);
-			drawCentreCentreString(dashData["ABSLevel"], nextpos + HALF_CELL_WIDTH, CELL_HEIGHT + CELL_HEIGHT + HALF_CELL_HEIGHT, 2, gfx); // Data
-			nextpos = nextpos + CELL_WIDTH;
+			gfx->setTextColor(colour, RGB565_DDGREY);
+			
+			gfx->drawBitmap(nextpos, ypos, iconABS_plus, 72, 72, colour, BLACK);
+			drawCentreCentreString(dashData["ABSLevel"], nextpos + CELL_WIDTH, ypos + CELL_HEIGHT  + CELL_HEIGHT +5, 1, gfx); // Data
 		}
-
-		if (dashData["BrakeBias"])
+		nextpos = nextpos + (CELL_WIDTH*2 );
+		gfx->setTextColor(RGB565_DDGREY, RGB565_DDGREY);
+		colour = RGB565_DDGREY;
+		if (dashData["BrakeBias"] != NULL)
 		{
 			colour = setColor(RED, dashData["BrakeBias"], RGB565_DDGREY);
-			gfx->setTextColor(colour, BLACK);
-			gfx->drawBitmap(nextpos, CELL_HEIGHT, iconBrake_Balance_Front_plus, 71, 72, colour, BLACK);
-			drawCentreCentreString(dashData["BrakeBias"], nextpos + HALF_CELL_WIDTH, CELL_HEIGHT + CELL_HEIGHT + HALF_CELL_HEIGHT, 2, gfx); // Data
-			nextpos = nextpos + CELL_WIDTH;
+			gfx->setTextColor(colour, RGB565_DDGREY);
+			gfx->drawBitmap(nextpos, ypos, iconBrake_Balance_Front_plus, 71, 72, colour, BLACK);
+			drawCentreCentreString(dashData["BrakeBias"], nextpos + CELL_WIDTH, ypos + CELL_HEIGHT  + CELL_HEIGHT +5 , 1, gfx); // Data
 		}
-		if (dashData["TCLevel"])
+		nextpos = nextpos + (CELL_WIDTH*2 );
+		//	gfx->setTextColor(RGB565_DDGREY, RGB565_DDGREY);
+		colour = RGB565_DDGREY;
+		if (dashData["TCLevel"] != NULL)
 		{
 			colour = setColor(ORANGE, dashData["TCLevel"], RGB565_DDGREY);
-			gfx->setTextColor(colour, BLACK);
-			gfx->drawBitmap(nextpos, CELL_HEIGHT, iconTracion_Control, 71, 72, colour, BLACK);
-			drawCentreCentreString(dashData["TCLevel"], nextpos + HALF_CELL_WIDTH, CELL_HEIGHT + CELL_HEIGHT + HALF_CELL_HEIGHT, 2, gfx); // Data
-			nextpos = nextpos + CELL_WIDTH;
-		}
+			gfx->setTextColor(colour, RGB565_DDGREY);
 
-		if (dashData["tcTcCut"].length())
-		{
-			colour = setColor(ORANGE, dashData["tcTcCut"], RGB565_DDGREY);
-			//	gfx->drawBitmap(nextpos, (ROWS - 3) * CELL_HEIGHT,iconToggle_Wiper,72, 72,RED, BLACK);nextpos = nextpos + 74;
-			gfx->setTextColor(colour); // IsInPitLane
-			gfx->drawBitmap(nextpos, CELL_HEIGHT, iconTracion_Control, 71, 72, colour, BLACK);
-			drawCentreCentreString(dashData["tcTcCut"], nextpos + HALF_CELL_WIDTH, CELL_HEIGHT + CELL_HEIGHT + HALF_CELL_HEIGHT, 2, gfx); // Data
-			nextpos = nextpos + CELL_WIDTH;
+			gfx->drawBitmap(nextpos, ypos, iconTracion_Control, 71, 72, colour, BLACK);
+			drawString(dashData["TCLevel"], nextpos + CELL_WIDTH, ypos + CELL_HEIGHT  + CELL_HEIGHT +5 , 1, gfx); // Data
 		}
-		if (dashData["EngineMap"])
+		nextpos = nextpos + (CELL_WIDTH*2 );
+		gfx->setTextColor(RGB565_DDGREY, RGB565_DDGREY);
+		colour = RGB565_DDGREY;
+		/*	if (dashData["tcTcCut"] != NULL)
+				{
+					colour = setColor(ORANGE, dashData["tcTcCut"], RGB565_DDGREY);
+					//	gfx->drawBitmap(nextpos, (ROWS - 3) * CELL_HEIGHT,iconToggle_Wiper,72, 72,RED, BLACK);nextpos = nextpos + 74;
+					gfx->setTextColor(colour); // IsInPitLane
+				}
+				gfx->drawBitmap(nextpos, CELL_HEIGHT, iconTracion_Control, 71, 72, colour, BLACK);
+				{
+					drawCentreCentreString(dashData["tcTcCut"], nextpos + HALF_CELL_WIDTH, CELL_HEIGHT + CELL_HEIGHT + HALF_CELL_HEIGHT, 2, gfx); // Data
+					nextpos = nextpos + CELL_WIDTH;
+				}
+
+				*/
+		gfx->setTextColor(RGB565_DDGREY, RGB565_DDGREY);
+		colour = BLUE;
+		if (dashData["EngineMap"] != NULL)
 		{
 			colour = setColor(BLUE, dashData["EngineMap"], RGB565_DDGREY);
 			gfx->setTextColor(colour); // IsInPitLane
-			gfx->drawBitmap(nextpos, CELL_HEIGHT, iconEngine_Map_plus, 71, 72, colour, BLACK);
-			drawCentreCentreString(dashData["EngineMap"], nextpos + HALF_CELL_WIDTH, CELL_HEIGHT + CELL_HEIGHT + HALF_CELL_HEIGHT, 2, gfx); // Data
-			nextpos = nextpos + CELL_WIDTH;
+			gfx->drawBitmap(nextpos, ypos, iconEngine_Map_plus, 71, 72, colour, BLACK);
+
+			drawCentreCentreString(dashData["EngineMap"], nextpos + HALF_CELL_WIDTH, ypos  + CELL_HEIGHT + CELL_HEIGHT +5, 1, gfx); // Data
+			nextpos = nextpos + (CELL_WIDTH * 2);
 		}
 
-		// nextpos = nextpos + 72;
-		// nextpos = nextpos + 72;
-		// nextpos = nextpos + 72;
-
-		// if (LiveData["gear"] == "1")
-		{
-			// nextpos = 0;
-
-			//	if (dashData["TCActive"])
-			{
-
-				gfx->drawBitmap(nextpos, CELL_HEIGHT, epd_bitmap_Stability_Control, 72, 72, setColor(ORANGE, dashData["TCActive"], RGB565_DDGREY, 1), setColor(ORANGE, dashData["TCActive"], RGB565_DDGREY));
-				nextpos = nextpos + CELL_WIDTH;
-			}
-
-			if (dashData["ABSActive"])
-			{
-				gfx->drawBitmap(nextpos, CELL_HEIGHT, epd_bitmap_ABS, 72, 72, setColor(YELLOW, dashData["ABSActive"], RGB565_DDGREY, 1), setColor(YELLOW, dashData["ABSActive"], RGB565_DDGREY));
-				nextpos = nextpos + CELL_WIDTH;
-			}
-
-			// TCActive.toInt() == 1 ? RED : RGB565_DDGREY);
-			if (dashData["brake"].length())
-			{
-				gfx->drawBitmap(nextpos, CELL_HEIGHT, epd_bitmap_Hand_Brake, 72, 72, setColor(ORANGE, dashData["brake"], RGB565_DDGREY));
-				nextpos = nextpos + CELL_WIDTH;
-			}
-
-			if (dashData["PitLimiterOn"].length())
-			{
-				gfx->drawBitmap(nextpos, CELL_HEIGHT, epd_bitmap_Pit_Limiter, 72, 72,
-								setColor(PURPLE, dashData["PitLimiterOn"], RGB565_DDGREY, 1), setColor(PURPLE, dashData["PitLimiterOn"], RGB565_DDGREY));
-				nextpos = nextpos + CELL_WIDTH;
-			}
-
-			// if (dashData["lights"].length())
-			{
-				gfx->drawBitmap(nextpos, CELL_HEIGHT, epd_bitmap_Lights, 72, 72, setColor(PURPLE, dashData["lights"], RGB565_DDGREY));
-				nextpos = nextpos + CELL_WIDTH;
-			}
-			// if (dashData["wipers"].length())
-			{
-				gfx->drawBitmap(nextpos, CELL_HEIGHT, epd_bitmap_Toggle_Wiper, 72, 72, setColor(GREEN, dashData["wipers"], RGB565_DDGREY));
-				// gfx->drawBitmap(144,1,epd_bitmap_Ignition,72,72,ignition == "1" ? RED : DARKGREY);
-				nextpos = nextpos + CELL_WIDTH;
-			}
-
-			// drawBitmap(1,1,epd_bitmap_Toggle_Wiper,72,72,RED,BLACK);
-			/*
-					element(1,1,1,1,absLevel,"ABS",RED,0);
-					element(4,1,3,2,absLevel ,"HAT",GREEN,1);
-			*/
-		}
 	}
+
+
+
+
 	uint16_t setColor(uint16_t c, String data, uint16_t b = DARKGREY, int invert = 0)
 	{
 		// RGB565_DDGREY
@@ -468,6 +759,10 @@ public:
 	}
 	int32_t temp(String temp)
 	{
+		if (temp.toInt() < 1)
+			return (BLACK);
+		if (temp.toInt() < 40)
+			return (BLUE);
 		if (temp.toInt() < 60)
 			return (CYAN);
 		if (temp.toInt() < 90)
@@ -480,61 +775,111 @@ public:
 			return (RED);
 		if (temp.toInt() < 300)
 			return (CYAN);
-		if (temp.toInt() < 600)
+		if (temp.toInt() < 400)
 			return (GREEN);
-		if (temp.toInt() < 700)
-			return (YELLOW);
 		if (temp.toInt() < 800)
+			return (YELLOW);
+		if (temp.toInt() < 900)
 			return (ORANGE);
-		if (temp.toInt() > 1100)
+		if (temp.toInt() > 1000)
 			return (RED);
 	}
 	int32_t flag()
 	{
 
 		int32_t flag = RGB565_DDGREY;
-		if (dashData["Flag_Checkered"].toInt())
+
+		if (dashData["LapInvalidated"] =1)
+		flag = RGB565_vDGREY;
+
+		if (dashData["Flag_Checkered"]!= 0)
 			flag = DARKGREEN;
-		if (dashData["Flag_Black"].toInt())
+		if (dashData["Flag_Black"]!= 0)
 			flag = RED;
-		if (dashData["Flag_Blue"].toInt())
+		if (dashData["Flag_Blue"]!= 0)
 			flag = BLUE;
-		if (dashData["Flag_White"].toInt())
+		if (dashData["Flag_White"]!= 0)
 			flag = WHITE;
-		if (dashData["Flag_Yellow"].toInt())
+		if (dashData["Flag_Yellow"]!= 0)
 			flag = YELLOW;
-		if (dashData["IsInPitLane"].toInt())
+		if (dashData["IsInPitLane"]!= 0)
 			flag = PURPLE;
+		if (dashData["IsInPitLane"]!= 0)
+			flag = PURPLE;
+
 		return (flag);
 	}
+
 	void element(int x, int y, int ewidth, int eheight, String data, String name = "Data", int32_t color = WHITE, int fill = 0, int oversize = 0, String pre = "", String post = "")
 	{
+		if (data)
+			element2(x, y, ewidth, eheight, name, color, fill, oversize, pre, post);
+	}
 
-		if (data.length())
+	void itembox(int x, int y, int ewidth, int eheight, int32_t color = WHITE)
+	{
+		x = (CELL_WIDTH)*x;	 //-1;
+		y = (CELL_HEIGHT)*y; //-1;
+							 // if(x ==0)
+
+		int x2 = CELL_WIDTH * ewidth;
+		int y2 = CELL_HEIGHT * eheight; //- 1;
+		gfx->drawRect(x, y, x2, y2, color);
+	}
+
+void out(String stuff)
+{
+	
+	drawString( "\n " + dashData["CurrentDateTime"], 20, SCREEN_HEIGHT - 20, 1, gfx);
+
+}
+	void element2(int x, int y, int ewidth, int eheight, String name = "Data", int32_t color = WHITE, int fill = 0, int oversize = 0, String pre = "", String post = "", int maxlen = 2)
+	{
+		// if(!dashData[name]) return ;
+		// if (dashData[name])
+		String data = dashData[name];
 		{
+
+			if (dashData[name] == lastData[name])
+			{
+				// return;
+			}
+
 			int xPadding = 10;
 			const static int yPadding = 0; // 5;
+			x = (CELL_WIDTH)*x;			   //-1;
+			y = (CELL_HEIGHT)*y;		   //-1;
+										   // if(x ==0)
 
+			int x2 = CELL_WIDTH * (ewidth);
+			int y2 = CELL_HEIGHT * (eheight); //- 1;
+			int multiplier = 1;
+			int xcenter = (ceil(x2)) - CELL_WIDTH; //-xPadding ;
+			int ycenter = (ceil(y2)) - CELL_HEIGHT;
+			//	gfx->drawRect(x + 1, y + 1, x2 - 1, y2 - 1, color); // Rectangle
 			// const bool dataChanged = (prevData[name] != data);
 			// const bool colorChanged = (prevColor[name] != color);
 			//  x+=10;
-			if (dashData[name])
-				data = dashData[name];
-			gfx->setTextColor(color, BLACK);
-			if (fill == 1)
+			if (fill == 0)
 			{
-				gfx->setTextColor(BLACK, color);
+				// if (colorChanged)
+				{
+					//	gfx->fillRect(x + 1, y + 1, x2, y2 - 4, BLACK);
+				}
+				//
 			}
 
-			x = CELL_WIDTH * x;	 //-1;
-			y = CELL_HEIGHT * y; //-1;
-								 // if(x ==0)
-
-			int x2 = CELL_WIDTH * ewidth;
-			int y2 = CELL_HEIGHT * eheight; //- 1;
-			int multiplier = 1;
-			int xcenter = ceil(x2) / 2; //-xPadding ;
-			int ycenter = ceil(y2) / 2;
+			if (dashData[name] != lastData[name])
+			{
+				gfx->setTextColor(color, RGB565_DDGREY);
+				gfx->fillRect(x + 1, y + 1, x2 - 1, y2 - 1, RGB565_DDGREY);
+			}
+			if (fill == 1)
+			{
+				if (dashData[name] != lastData[name])
+					gfx->fillRect(x + 1, y + 1, x2 - 1, y2 - 1, color);
+				gfx->setTextColor(RGB565_DDGREY, color);
+			}
 
 			if (oversize > 2)
 			{
@@ -544,6 +889,7 @@ public:
 				// int xPadding = 15;
 			}
 			int fontSize = ceil(titlefont * eheight) + oversize;
+
 			const static int titleAreaHeight = yPadding - cellTitleHeight + (8 * eheight);
 
 			// if (colorChanged )
@@ -557,7 +903,7 @@ public:
 				{
 					// if (colorChanged)
 					{
-						gfx->fillRect(x + 1, y + 1, x2 - 1, y2 - 1, color);
+						gfx->fillRect(x + 2, y + 2, x2 - 2, y2 - 2, color);
 					} // Rectangle
 				}
 				if (fill == 2)
@@ -569,17 +915,8 @@ public:
 				{
 					// if (colorChanged)
 					{
-						gfx->fillRect(x + 1, y + 1, x2 - 1, y2 - 1, color);
+						gfx->fillRect(x +2, y +2, x2-2 , y2-2, color);
 					} // Rectangle
-				}
-				if (fill == 0)
-				{
-					// if (colorChanged)
-					{
-						//	gfx->fillRect(x + 1, y + 1, x2, y2 - 4, BLACK);
-					}
-					//
-					gfx->drawRect(x + 1, y + 1, x2 - 1, y2 - 1, color); // Rectangle
 				}
 
 				// title
@@ -618,12 +955,31 @@ public:
 				{
 					gfx->setTextColor(BLACK, color);
 				}
-				drawString(pre, x + 5, y + 5, 2, gfx);												// Data
-				drawCentreCentreString(data + post, x + (xcenter), y + ycenter + 5, fontSize, gfx); // Data
-																									// drawCentreString(data, x + (x - x2) , y + ycenter, fontSize, gfx); // Data
+
+				int ypad = HALF_CELL_HEIGHT;
+				gfx->setFont(u8g2_font_10x20_mf);
+				drawString(pre, x + 10, y + 21, 1, gfx);
+				gfx->setFont(u8g2_font_spleen16x32_mn);
+				if (eheight > 3)
+				{
+					gfx->setFont(u8g2_font_spleen16x32_mn);
+					ypad = HALF_CELL_HEIGHT;
+					// HALF_CELL_WIDTH
+					drawRightString(data + post, x + (ewidth * (CELL_WIDTH)) - (4), (y + ((CELL_HEIGHT)*eheight)) - (ypad), 2,gfx); // Data
+				}
+				else
+				{
+					// HALF_CELL_WIDTH
+					drawRightString(data + post, x + (ewidth * (CELL_WIDTH)) - (8), (y + ((CELL_HEIGHT)*eheight)) - (8), eheight-1 , gfx); // Data
+				}
+				gfx->setFont(u8g2_font_10x20_mf); // drawCentreString(data, x + (x - x2) , y + ycenter, fontSize, gfx); // Data
 			}
+			gfx->setTextColor(WHITE);
+			lastData[name] = dashData[name];
 		}
+		gfx->setFont(u8g2_font_10x20_mf);
 	}
+	
 };
 
 #endif
